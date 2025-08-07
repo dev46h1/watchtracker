@@ -4,7 +4,9 @@ import '../services/storage_service.dart';
 import '../services/url_service.dart';
 
 class AddVideoScreen extends StatefulWidget {
-  const AddVideoScreen({super.key});
+  final String? initialUrl;
+  
+  const AddVideoScreen({super.key, this.initialUrl});
 
   @override
   State<AddVideoScreen> createState() => _AddVideoScreenState();
@@ -25,6 +27,11 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
   void initState() {
     super.initState();
     _loadCategories();
+    
+    if (widget.initialUrl != null) {
+      _urlController.text = widget.initialUrl!;
+      _autoFillTitle();
+    }
   }
 
   Future<void> _loadCategories() async {
