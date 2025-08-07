@@ -4,7 +4,9 @@ import '../services/storage_service.dart';
 import '../services/url_service.dart';
 
 class AddVideoScreen extends StatefulWidget {
-  const AddVideoScreen({super.key});
+  final String? initialUrl;
+  
+  const AddVideoScreen({super.key, this.initialUrl});
 
   @override
   State<AddVideoScreen> createState() => _AddVideoScreenState();
@@ -19,11 +21,17 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
   List<String> _categories = [];
   String? _selectedCategory;
   bool _isLoading = false;
+  bool _isFetchingTitle = false;
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
+    
+    if (widget.initialUrl != null) {
+      _urlController.text = widget.initialUrl!;
+      _autoFillTitle();
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -50,10 +58,34 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
     });
 
     try {
+      final url = _urlController.text.trim();
+      final videoId = UrlService.extractVideoId(url);
+      
+      if (videoId != null) {
+        final existingVideos = await StorageService.getVideos();
+        final duplicateVideo = existingVideos.where((video) {
+          final existingVideoId = UrlService.extractVideoId(video.url);
+          return existingVideoId == videoId;
+        }).firstOrNull;
+        
+        if (duplicateVideo != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('This video is already in your watchlist: "${duplicateVideo.title}"'),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+          return;
+        }
+      }
+
       final video = Video(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text.trim(),
-        url: _urlController.text.trim(),
+        url: url,
         category: _selectedCategory ?? 'General',
         dateAdded: DateTime.now(),
       );
@@ -90,10 +122,26 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
     }
   }
 
-  void _autoFillTitle() {
+  Future<void> _autoFillTitle() async {
     final url = _urlController.text.trim();
-    if (url.isNotEmpty && _titleController.text.isEmpty) {
-      _titleController.text = UrlService.extractVideoTitle(url);
+    if (url.isNotEmpty && _titleController.text.isEmpty && UrlService.isValidYouTubeUrl(url)) {
+      setState(() {
+        _isFetchingTitle = true;
+      });
+      
+      try {
+        final title = await UrlService.extractVideoTitle(url);
+        if (mounted && _titleController.text.isEmpty) {
+          _titleController.text = title;
+        }
+      } catch (e) {
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isFetchingTitle = false;
+          });
+        }
+      }
     }
   }
 
@@ -133,10 +181,20 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Video Title',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.title),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.title),
+                  suffixIcon: _isFetchingTitle 
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {

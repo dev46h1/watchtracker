@@ -27,6 +27,8 @@ class VideoTile extends StatelessWidget {
         ),
         title: Text(
           video.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             decoration: video.isWatched ? TextDecoration.lineThrough : null,
             color: video.isWatched ? Colors.grey : null,

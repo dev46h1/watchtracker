@@ -4,7 +4,7 @@ A Flutter-based Android app for managing your YouTube video watchlist with categ
 
 ## Download 📱
 
-**[Download the latest APK](../../releases)**
+**[Download the latest APK](../../releases/download/v1.0.2/WatchTracker-V1.0.2.apk)**
 
 *Keep checking this repo for future updates!*
 
@@ -28,7 +28,7 @@ A Flutter-based Android app for managing your YouTube video watchlist with categ
 ### Adding Videos
 1. Tap the **+** (Add) button on the home screen
 2. Enter the YouTube URL (the app validates YouTube links)
-3. Add a title (auto-fills based on URL if left empty)
+3. Title will be autopopulated (can edit if you want to customize)
 4. Select or create a category
 5. Tap **Save Video**
 
