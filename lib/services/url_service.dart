@@ -47,13 +47,8 @@ class UrlService {
     return youtubeRegex.hasMatch(url);
   }
 
-  static Future<String> extractVideoTitle(String url) async {
+  static String? extractVideoId(String url) {
     try {
-      final yt = YoutubeExplode();
-      final video = await yt.videos.get(url);
-      yt.close();
-      return video.title;
-    } catch (e) {
       final uri = Uri.parse(url);
       String videoId = '';
       
@@ -61,9 +56,33 @@ class UrlService {
         videoId = uri.queryParameters['v'] ?? '';
       } else if (uri.host.contains('youtu.be')) {
         videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : '';
+      } else if (uri.host.contains('youtube.com') && uri.pathSegments.contains('embed')) {
+        final embedIndex = uri.pathSegments.indexOf('embed');
+        if (embedIndex + 1 < uri.pathSegments.length) {
+          videoId = uri.pathSegments[embedIndex + 1];
+        }
+      } else if (uri.host.contains('youtube.com') && uri.pathSegments.contains('v')) {
+        final vIndex = uri.pathSegments.indexOf('v');
+        if (vIndex + 1 < uri.pathSegments.length) {
+          videoId = uri.pathSegments[vIndex + 1];
+        }
       }
       
-      return videoId.isNotEmpty ? 'YouTube Video ($videoId)' : 'YouTube Video';
+      return videoId.isNotEmpty ? videoId : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<String> extractVideoTitle(String url) async {
+    try {
+      final yt = YoutubeExplode();
+      final video = await yt.videos.get(url);
+      yt.close();
+      return video.title;
+    } catch (e) {
+      final videoId = extractVideoId(url);
+      return videoId != null ? 'YouTube Video ($videoId)' : 'YouTube Video';
     }
   }
 }

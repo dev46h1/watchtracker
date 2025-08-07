@@ -58,10 +58,34 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
     });
 
     try {
+      final url = _urlController.text.trim();
+      final videoId = UrlService.extractVideoId(url);
+      
+      if (videoId != null) {
+        final existingVideos = await StorageService.getVideos();
+        final duplicateVideo = existingVideos.where((video) {
+          final existingVideoId = UrlService.extractVideoId(video.url);
+          return existingVideoId == videoId;
+        }).firstOrNull;
+        
+        if (duplicateVideo != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('This video is already in your watchlist: "${duplicateVideo.title}"'),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+          return;
+        }
+      }
+
       final video = Video(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text.trim(),
-        url: _urlController.text.trim(),
+        url: url,
         category: _selectedCategory ?? 'General',
         dateAdded: DateTime.now(),
       );
