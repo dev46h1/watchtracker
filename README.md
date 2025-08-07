@@ -4,7 +4,7 @@ A Flutter-based Android app for managing your YouTube video watchlist with categ
 
 ## Download 📱
 
-**[Download the latest APK](../../releases)**
+**[Download the latest APK](../../releases/download/v1.0.0/WatchTracker-V1.0.0.apk)**
 
 *Keep checking this repo for future updates!*
 
