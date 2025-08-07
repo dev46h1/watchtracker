@@ -48,7 +48,16 @@ class _WatchTrackerAppState extends State<WatchTrackerApp> {
             MaterialPageRoute(
               builder: (context) => AddVideoScreen(initialUrl: sharedText),
             ),
-          );
+          ).then((result) {
+            // Refresh the home screen when returning from shared video addition
+            if (result == true) {
+              // Force a rebuild of the home screen to refresh the video list
+              _navigatorKey.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            }
+          });
         }
       }
     }
