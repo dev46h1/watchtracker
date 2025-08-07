@@ -2,15 +2,39 @@ import 'package:url_launcher/url_launcher.dart';
 
 class UrlService {
   static Future<void> openYouTubeVideo(String url) async {
-    final Uri uri = Uri.parse(url);
-    
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-    } else {
-      throw 'Could not launch $url';
+    try {
+      final Uri uri = Uri.parse(url);
+      
+      // Try to launch with YouTube app first, then fallback to browser
+      bool launched = false;
+      
+      // First try to open with YouTube app
+      if (uri.host.contains('youtube.com') || uri.host.contains('youtu.be')) {
+        try {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+          launched = true;
+        } catch (e) {
+          // YouTube app launch failed, will try browser
+          launched = false;
+        }
+      }
+      
+      // If YouTube app launch failed, try with browser
+      if (!launched) {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        } else {
+          throw 'No application found to open YouTube videos. Please install YouTube app or a web browser.';
+        }
+      }
+    } catch (e) {
+      throw 'Could not open video: ${e.toString()}';
     }
   }
 
