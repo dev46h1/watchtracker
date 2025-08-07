@@ -1,4 +1,5 @@
 import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class UrlService {
   static Future<void> openYouTubeVideo(String url) async {
@@ -46,16 +47,23 @@ class UrlService {
     return youtubeRegex.hasMatch(url);
   }
 
-  static String extractVideoTitle(String url) {
-    final uri = Uri.parse(url);
-    String videoId = '';
-    
-    if (uri.host.contains('youtube.com')) {
-      videoId = uri.queryParameters['v'] ?? '';
-    } else if (uri.host.contains('youtu.be')) {
-      videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : '';
+  static Future<String> extractVideoTitle(String url) async {
+    try {
+      final yt = YoutubeExplode();
+      final video = await yt.videos.get(url);
+      yt.close();
+      return video.title;
+    } catch (e) {
+      final uri = Uri.parse(url);
+      String videoId = '';
+      
+      if (uri.host.contains('youtube.com')) {
+        videoId = uri.queryParameters['v'] ?? '';
+      } else if (uri.host.contains('youtu.be')) {
+        videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : '';
+      }
+      
+      return videoId.isNotEmpty ? 'YouTube Video ($videoId)' : 'YouTube Video';
     }
-    
-    return videoId.isNotEmpty ? 'YouTube Video ($videoId)' : 'YouTube Video';
   }
 }

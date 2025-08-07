@@ -19,6 +19,7 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
   List<String> _categories = [];
   String? _selectedCategory;
   bool _isLoading = false;
+  bool _isFetchingTitle = false;
 
   @override
   void initState() {
@@ -90,10 +91,26 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
     }
   }
 
-  void _autoFillTitle() {
+  Future<void> _autoFillTitle() async {
     final url = _urlController.text.trim();
-    if (url.isNotEmpty && _titleController.text.isEmpty) {
-      _titleController.text = UrlService.extractVideoTitle(url);
+    if (url.isNotEmpty && _titleController.text.isEmpty && UrlService.isValidYouTubeUrl(url)) {
+      setState(() {
+        _isFetchingTitle = true;
+      });
+      
+      try {
+        final title = await UrlService.extractVideoTitle(url);
+        if (mounted && _titleController.text.isEmpty) {
+          _titleController.text = title;
+        }
+      } catch (e) {
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isFetchingTitle = false;
+          });
+        }
+      }
     }
   }
 
@@ -133,10 +150,20 @@ class _AddVideoScreenState extends State<AddVideoScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Video Title',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.title),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.title),
+                  suffixIcon: _isFetchingTitle 
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
