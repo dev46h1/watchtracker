@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Video'),
-        content: Text('Are you sure you want to delete "${video.title}"?'),
+        content: Text('Are you sure you want to delete "${video.title.length > 50 ? '${video.title.substring(0, 50)}...' : video.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
