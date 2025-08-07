@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
   }
 
   @override
