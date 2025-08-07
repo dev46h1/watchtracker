@@ -42,6 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       setState(() {
+        _videos = [];
+        _categories = ['All', 'General', 'Tutorials', 'Entertainment', 'Music'];
+        _selectedCategory = 'All';
+        _filteredVideos = [];
         _isLoading = false;
       });
       if (mounted) {

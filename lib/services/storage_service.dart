@@ -7,12 +7,26 @@ class StorageService {
   static const String _categoriesKey = 'categories';
 
   static Future<List<Video>> getVideos() async {
-    final prefs = await SharedPreferences.getInstance();
-    final videosJson = prefs.getStringList(_videosKey) ?? [];
-    
-    return videosJson
-        .map((json) => Video.fromJson(jsonDecode(json)))
-        .toList();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final videosJson = prefs.getStringList(_videosKey) ?? [];
+      
+      return videosJson
+          .map((json) {
+            try {
+              return Video.fromJson(jsonDecode(json));
+            } catch (e) {
+              print('Error parsing video JSON: $e');
+              return null;
+            }
+          })
+          .where((video) => video != null)
+          .cast<Video>()
+          .toList();
+    } catch (e) {
+      print('Error loading videos: $e');
+      return [];
+    }
   }
 
   static Future<void> saveVideos(List<Video> videos) async {
