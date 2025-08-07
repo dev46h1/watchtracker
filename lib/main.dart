@@ -5,6 +5,8 @@ import 'screens/home_screen.dart';
 import 'screens/add_video_screen.dart';
 import 'services/url_service.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 void main() {
   runApp(const WatchTrackerApp());
 }
@@ -48,7 +50,13 @@ class _WatchTrackerAppState extends State<WatchTrackerApp> {
             MaterialPageRoute(
               builder: (context) => AddVideoScreen(initialUrl: sharedText),
             ),
-          );
+          ).then((result) {
+            // Simply pop back to the existing HomeScreen
+            if (result == true) {
+              // Just pop back - the HomeScreen will be refreshed when it becomes visible again
+              // No need to rebuild the entire navigation stack
+            }
+          });
         }
       }
     }
@@ -64,6 +72,7 @@ class _WatchTrackerAppState extends State<WatchTrackerApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
+      navigatorObservers: [routeObserver],
       title: 'WatchTracker',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
